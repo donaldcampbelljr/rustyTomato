@@ -1,6 +1,9 @@
 
 use std::io::{self,Write};
 use std::{thread, time};
+use std::fs::File;
+use std::io::BufReader;
+use std::io::prelude::*;
 
 #[derive(Debug)]
 pub enum TimeUnits{
@@ -13,7 +16,7 @@ fn main() {
 
     let mut user_time_input: (u64, TimeUnits);
 
-    let numerals: Vec<&str> = build_ascii_numerals("/Users/drcwork/RustroverProjects/rsPomodoro/src/ascii_art/ascii_numbers.txt");
+    let numerals: Vec<String> = build_ascii_numerals("/Users/drcwork/RustroverProjects/rsPomodoro/src/ascii_art/ascii_numbers.txt");
 
     loop {
         println!("Welcome to the rustyTomato! Input the desired timer length and press enter!\n");
@@ -88,7 +91,7 @@ fn get_time_input() -> (u64, TimeUnits) {
 
 }
 
-fn timer(time_seconds: u64, numerals: Vec<&str>){
+fn timer(time_seconds: u64, numerals: Vec<String>){
     // takes in time and detracts it after pausing for one second
 
     //let numerals: Vec<&str> = numerals;
@@ -117,7 +120,7 @@ fn timer(time_seconds: u64, numerals: Vec<&str>){
 
 }
 
-fn pretty_display(min:u64, sec:u64, numerals: &Vec<&str>) {
+fn pretty_display(min:u64, sec:u64, numerals: &Vec<String>) {
     let min = min;
     let sec = sec;
     // create a nice display of time
@@ -127,16 +130,38 @@ fn pretty_display(min:u64, sec:u64, numerals: &Vec<&str>) {
 
 }
 
-fn build_ascii_numerals(filepath: &str) -> Vec<&str>{
+fn build_ascii_numerals(filepath: &str) -> Vec<String> {
 
-    let mut numerals:Vec<&str> = Vec::new();
-    // Hard code for now, read from text file later!!!
-    let zero: &str =  " 0000\n00  00\n00  00\n00  00\n 0000";
-    let one: &str = "1111\n  11\n  11\n  11\n111111";
-    numerals.push(zero);
-    numerals.push(one);
+    let file = File::open(filepath).unwrap();
+    let mut reader = BufReader::new(file);
 
-    // Return vector contianing string slices that represent the numerals.
+    // numerals will be final vector returned
+    let mut temp_batch = Vec::new();
+    let mut numerals:Vec<String> = Vec::new();
+
+    for line in reader.lines() {
+        let line = line.unwrap();
+
+        temp_batch.push(line);
+
+        if temp_batch.len() == 5 {
+            let concatenated_lines: String = temp_batch.join("\n");
+
+            // Had to push a String NOT a &str!
+            // Original code has hard coded &str and that worked fine.
+            numerals.push(concatenated_lines);
+
+            temp_batch.clear();
+        }
+    }
+
+    // Hard code for now, read from text file later!
+    // let zero: &str =  " 0000\n00  00\n00  00\n00  00\n 0000";
+    // let one: &str = "1111\n  11\n  11\n  11\n111111";
+    // numerals.push(zero);
+    // numerals.push(one);
+
+    // Return vector containing string slices that represent the numerals.
     numerals
 
 }
