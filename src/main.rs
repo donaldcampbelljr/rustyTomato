@@ -125,7 +125,8 @@ fn pretty_display(min:u64, sec:u64, numerals: &Vec<String>) {
     let sec = sec;
     // create a nice display of time
     println!("{}   {}", min, sec);
-    println!("{}", numerals.get(0).unwrap())
+    //println!("{}   {}", numerals.get(min).unwrap(), numerals.get(sec).unwrap())
+    println!("{}     {}", numerals.get(0).unwrap(), numerals.get(1).unwrap())
 
 
 }
