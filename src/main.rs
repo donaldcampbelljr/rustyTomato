@@ -16,7 +16,7 @@ fn main() {
 
     let mut user_time_input: (u64, TimeUnits);
 
-    let numerals: Vec<String> = build_ascii_numerals("/Users/drcwork/RustroverProjects/rsPomodoro/src/ascii_art/ascii_numbers.txt");
+    let numerals: Vec<Vec<String>> = build_ascii_numerals("/Users/drcwork/RustroverProjects/rsPomodoro/src/ascii_art/ascii_numbers.txt");
 
     loop {
         println!("Welcome to the rustyTomato! Input the desired timer length and press enter!\n");
@@ -91,7 +91,7 @@ fn get_time_input() -> (u64, TimeUnits) {
 
 }
 
-fn timer(time_seconds: u64, numerals: Vec<String>){
+fn timer(time_seconds: u64, numerals: Vec<Vec<String>>){
     // takes in time and detracts it after pausing for one second
 
     //let numerals: Vec<&str> = numerals;
@@ -120,18 +120,30 @@ fn timer(time_seconds: u64, numerals: Vec<String>){
 
 }
 
-fn pretty_display(min:u64, sec:u64, numerals: &Vec<String>) {
-    let min = min;
-    let sec = sec;
+fn pretty_display(min:u64, sec:u64, numerals: &Vec<Vec<String>>) {
+    let min = min as usize;
+    let sec = sec as usize;
+
+    // Clear screen each time
+    print!("{esc}c", esc = 27 as char);
+
     // create a nice display of time
     println!("{}   {}", min, sec);
     //println!("{}   {}", numerals.get(min).unwrap(), numerals.get(sec).unwrap())
-    println!("{}     {}", numerals.get(0).unwrap(), numerals.get(1).unwrap())
+    //println!("{}     {}", numerals.get(0).unwrap(), numerals.get(1).unwrap())
+    // Minutes
+    for j in 0..5 {
+        println!("{}", numerals[min][j]);
+    }
+    // Seconds
+    for j in 0..5 {
+        println!("{}", numerals[sec][j]);
+    }
 
 
 }
 
-fn build_ascii_numerals(filepath: &str) -> Vec<String> {
+fn build_ascii_numerals(filepath: &str) -> Vec<Vec<String>> {
 
     let file = File::open(filepath).unwrap();
     let mut reader = BufReader::new(file);
@@ -166,7 +178,7 @@ fn build_ascii_numerals(filepath: &str) -> Vec<String> {
     let mut new_numeral = Vec::new();
     // Make double digits.
 
-    for number in 0..20 {
+    for number in 0..60 {
         println!("{}",number);
         let mut temp_numeral:Vec<String> = Vec::new();
         if number < 9 {
@@ -221,10 +233,15 @@ fn build_ascii_numerals(filepath: &str) -> Vec<String> {
     }
 
 
-    println!("{:?}", new_numeral);
+    // println!("{:?}", new_numeral);
+    // for k in 0..5 {
+    //     for j in 0..5 {
+    //     println!("{}", new_numeral[k][j]);
+    // }
+    // }
 
-    println!("DONE");
+    //println!("DONE");
     // Return vector containing string slices that represent the numerals.
+    let numerals = new_numeral;
     numerals
-
 }
