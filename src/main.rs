@@ -146,7 +146,7 @@ fn build_ascii_numerals(filepath: &str) -> Vec<String> {
         temp_batch.push(line);
 
         if temp_batch.len() == 5 {
-            let concatenated_lines: String = temp_batch.join("\n");
+            let concatenated_lines: String = temp_batch.join("");
 
             // Had to push a String NOT a &str!
             // Original code has hard coded &str and that worked fine.
@@ -156,12 +156,24 @@ fn build_ascii_numerals(filepath: &str) -> Vec<String> {
         }
     }
 
-    // Hard code for now, read from text file later!
-    // let zero: &str =  " 0000\n00  00\n00  00\n00  00\n 0000";
-    // let one: &str = "1111\n  11\n  11\n  11\n111111";
-    // numerals.push(zero);
-    // numerals.push(one);
 
+    let mut new_numeral:Vec<String> = Vec::new();
+    // Make double digits.
+    let mut temp_numeral:Vec<String> = Vec::new();
+    for i in vec![0, 6, 12, 18, 24]{
+        let string_slice1:&str = &numerals[0][i..(i+6)];
+        let string_slice2:&str = &numerals[1][i..(i+6)];
+        let concatenated: String = String::from(string_slice1) + "   " + string_slice2;
+        temp_numeral.push(concatenated);
+    }
+
+    temp_numeral.join("\n");
+
+    for k in 0..5 {
+        println!("{}", temp_numeral.get(k).unwrap());
+    }
+
+    println!("DONE");
     // Return vector containing string slices that represent the numerals.
     numerals
 
