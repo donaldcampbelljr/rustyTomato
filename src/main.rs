@@ -13,13 +13,15 @@ fn main() {
 
     let mut user_time_input: (u64, TimeUnits);
 
+    let numerals: Vec<&str> = build_ascii_numerals("/Users/drcwork/RustroverProjects/rsPomodoro/src/ascii_art/ascii_numbers.txt");
+
     loop {
         println!("Welcome to the rustyTomato! Input the desired timer length and press enter!\n");
 
         user_time_input = get_time_input();
         let calculated_time = create_time(user_time_input.0, user_time_input.1);
 
-        timer(calculated_time);
+        timer(calculated_time, numerals);
 
         break;
     }
@@ -86,11 +88,12 @@ fn get_time_input() -> (u64, TimeUnits) {
 
 }
 
-fn timer(time_seconds: u64){
+fn timer(time_seconds: u64, numerals: Vec<&str>){
     // takes in time and detracts it after pausing for one second
 
-    let mut time = time_seconds;
-    let ten_millis = time::Duration::from_millis(1000);
+    //let numerals: Vec<&str> = numerals;
+    let mut time: u64 = time_seconds;
+    let ten_millis: time::Duration = time::Duration::from_millis(1000);
     loop {
 
 
@@ -100,7 +103,7 @@ fn timer(time_seconds: u64){
         let min = time / 60;
         let seconds = time % 60;
 
-        pretty_display(min, seconds);
+        pretty_display(min, seconds, &numerals);
 
         if time < 1 {
             println!("\nTIME DONE\n");
@@ -114,11 +117,26 @@ fn timer(time_seconds: u64){
 
 }
 
-fn pretty_display(min:u64, sec:u64) {
+fn pretty_display(min:u64, sec:u64, numerals: &Vec<&str>) {
     let min = min;
     let sec = sec;
     // create a nice display of time
     println!("{}   {}", min, sec);
+    println!("{}", numerals.get(0).unwrap())
 
+
+}
+
+fn build_ascii_numerals(filepath: &str) -> Vec<&str>{
+
+    let mut numerals:Vec<&str> = Vec::new();
+    // Hard code for now, read from text file later!!!
+    let zero: &str =  " 0000\n00  00\n00  00\n00  00\n 0000";
+    let one: &str = "1111\n  11\n  11\n  11\n111111";
+    numerals.push(zero);
+    numerals.push(one);
+
+    // Return vector contianing string slices that represent the numerals.
+    numerals
 
 }
