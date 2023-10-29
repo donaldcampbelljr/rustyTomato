@@ -156,22 +156,72 @@ fn build_ascii_numerals(filepath: &str) -> Vec<String> {
         }
     }
 
+    println!("The length of the vector is {}", numerals.len());
+    for k in 0..10 {
+        println!("{}", numerals.get(k).unwrap());
+        println!("\n");
+    }
 
-    let mut new_numeral:Vec<String> = Vec::new();
+
+    let mut new_numeral = Vec::new();
     // Make double digits.
-    let mut temp_numeral:Vec<String> = Vec::new();
-    for i in vec![0, 6, 12, 18, 24]{
-        let string_slice1:&str = &numerals[0][i..(i+6)];
-        let string_slice2:&str = &numerals[1][i..(i+6)];
-        let concatenated: String = String::from(string_slice1) + "   " + string_slice2;
-        temp_numeral.push(concatenated);
+
+    for number in 0..20 {
+        println!("{}",number);
+        let mut temp_numeral:Vec<String> = Vec::new();
+        if number < 9 {
+            for i in vec![0, 6, 12, 18, 24] {
+                let string_slice1: &str = &numerals[0][i..(i + 6)];
+                let string_slice2: &str = &numerals[number][i..(i + 6)];
+                let concatenated: String = String::from(string_slice1) + "   " + string_slice2;
+                temp_numeral.push(concatenated);
+            }
+            temp_numeral.join("\n");
+
+            // for k in 0..5 {
+            //     println!("{}", temp_numeral.get(k).unwrap());
+            // }
+        }
+        else {
+
+            // // This way is difficult road to travel, just use Math.
+            // // need to take the number, deconstruct it into digits and then use that digit for each respective slices.
+            // let number_string = number.to_string();//String::from(number);
+            // // Get an iterator over the characters in the number.
+            // //let mut chars = number_string.chars();
+            // // Split the number at the first character.
+            // let first = &number_string[0];
+            // let second = &number_string[1];
+            // let first_number:u32 = first.to_digit(10).unwrap();
+            // println!("FIRST NUMBER: {}", first_number);
+            // let second_number:u32 = second.to_digit(10).unwrap();
+            // println!("Second NUMBER: {}", second_number);
+
+            let first:usize = (number / 10) as usize;
+            // println!("FIRST NUMBER: {}", first);
+            let second:usize = (number%10) as usize;
+            // println!("Second NUMBER: {}", second);
+
+            for i in vec![0, 6, 12, 18, 24] {
+                let string_slice1: &str = &numerals[first][i..(i + 6)];
+                let string_slice2: &str = &numerals[second][i..(i + 6)];
+                let concatenated: String = String::from(string_slice1) + "   " + string_slice2;
+                temp_numeral.push(concatenated);
+            }
+
+            temp_numeral.join("\n");
+
+            // for k in 0..5 {
+            //     println!("{}", temp_numeral.get(k).unwrap());
+            // }
+
+
+        }
+        new_numeral.push(temp_numeral);
     }
 
-    temp_numeral.join("\n");
 
-    for k in 0..5 {
-        println!("{}", temp_numeral.get(k).unwrap());
-    }
+    println!("{:?}", new_numeral);
 
     println!("DONE");
     // Return vector containing string slices that represent the numerals.
