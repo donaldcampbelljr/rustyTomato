@@ -1,6 +1,6 @@
 
 use std::io::{self,Write};
-use std::{thread, time};
+use std::{thread, time, path::Path};
 use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::*;
@@ -16,10 +16,16 @@ fn main() {
 
     let mut user_time_input: (u64, TimeUnits);
 
-    let numerals: Vec<Vec<String>> = build_ascii_numerals("/Users/drcwork/RustroverProjects/rsPomodoro/src/ascii_art/ascii_numbers.txt");
+    // If using `cargo run` in the top level folder.
+    let file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
+    //let numerals: Vec<Vec<String>> = build_ascii_numerals("/home/drc/GITHUB/rustyTomato/src/ascii_art/ascii_numbers.txt");
+    // Must convert &Path to &str and unwrap the result of the .to_str() func
+    let numerals: Vec<Vec<String>> = build_ascii_numerals(file_path.to_str().unwrap());
 
     loop {
-        println!("Welcome to the rustyTomato! Input the desired timer length and press enter!\n");
+        // Clear screen each time
+        print!("{esc}c", esc = 27 as char);
+        println!("Welcome to the rsTomato! 🍅 \nInput the desired timer length and press enter!\n");
 
         user_time_input = get_time_input();
         let calculated_time = create_time(user_time_input.0, user_time_input.1);
@@ -28,7 +34,7 @@ fn main() {
 
         break;
     }
-    println!("Hello, world!");
+    //println!("Hello, world!");
     //println!("{:?}", calculated_time);
 }
 
@@ -57,8 +63,8 @@ fn get_time_input() -> (u64, TimeUnits) {
 
     // Prompting the User
 
-    println!("");
-    println!("> ");
+    println!("e.g. 25 min, 300 seconds");
+    println!(">  ");
     io::stdout().flush().unwrap();
 
     let mut input_str = String::new();
@@ -168,18 +174,18 @@ fn build_ascii_numerals(filepath: &str) -> Vec<Vec<String>> {
         }
     }
 
-    println!("The length of the vector is {}", numerals.len());
-    for k in 0..10 {
-        println!("{}", numerals.get(k).unwrap());
-        println!("\n");
-    }
+    // println!("The length of the vector is {}", numerals.len());
+    // for k in 0..10 {
+    //     println!("{}", numerals.get(k).unwrap());
+    //     println!("\n");
+    // }
 
 
     let mut new_numeral = Vec::new();
     // Make double digits.
 
     for number in 0..60 {
-        println!("{}",number);
+        // println!("{}",number);
         let mut temp_numeral:Vec<String> = Vec::new();
         if number < 9 {
             for i in vec![0, 6, 12, 18, 24] {
