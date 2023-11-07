@@ -11,10 +11,15 @@ pub enum TimeUnits{
     Seconds(),
 }
 
+enum TimeUnitOrBreak<'a> {
+    Str(&'a str),
+    TimeItem(u64, TimeUnits),
+}
+
 
 fn main() {
 
-    let mut user_time_input: (u64, TimeUnits);
+    let mut user_time_input: TimeUnitOrBreak;
 
     // If using `cargo run` in the top level folder.
     let file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
@@ -28,9 +33,24 @@ fn main() {
         println!("Welcome to the rsTomato! 🍅 \nInput the desired timer length and press enter!\n");
 
         user_time_input = get_time_input();
-        let calculated_time = create_time(user_time_input.0, user_time_input.1);
 
-        timer(calculated_time, numerals);
+        // if user_time_input = TimeUnitOrBreak::Str("quit".as_str()) { $
+        //     break; $ $
+        // }
+        match user_time_input {
+            TimeUnitOrBreak::Str(s) => {break;},
+            TimeUnitOrBreak::TimeItem(time, units) => {
+
+                let calculated_time = create_time(time, units);
+
+                timer(calculated_time, numerals);
+
+            },
+        }
+
+        // let calculated_time = create_time(user_time_input.0, user_time_input.1);
+        //
+        // timer(calculated_time, numerals);
 
         break;
     }
@@ -59,7 +79,7 @@ fn create_time(time_numbers: u64, time_tuple: TimeUnits) -> u64 {
 
 }
 
-fn get_time_input() -> (u64, TimeUnits) {
+fn get_time_input() -> TimeUnitOrBreak<'static> {
 
     // Prompting the User
 
@@ -76,6 +96,10 @@ fn get_time_input() -> (u64, TimeUnits) {
     println!("");
 
     let lc_input_str = input_str.to_lowercase(); // makes lower case
+    if input_str == "quit" {
+        TimeUnitOrBreak::Str(lc_input_str.as_str());
+    }
+
     let mut split_input_iter = lc_input_str.trim().split_whitespace(); // creates an iterable
 
     let time_number= split_input_iter.next().unwrap_or_default();// takes the 'next' str in the iterable (this is the first one)
@@ -93,7 +117,7 @@ fn get_time_input() -> (u64, TimeUnits) {
         _ => TimeUnits::Minutes(), // Basically just assume minutes
     };
 
-    (time_number, time_units)
+    TimeUnitOrBreak::TimeItem(time_number, time_units)
 
 }
 
