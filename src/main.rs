@@ -1,7 +1,7 @@
 
-use std::io::{self,Write};
+use std::io::{self, BufWriter, Write};
 use std::{thread, time, path::Path};
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::BufReader;
 use std::io::prelude::*;
 
@@ -23,6 +23,7 @@ fn main() {
 
     // If using `cargo run` in the top level folder.
     let file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
+    let session_file_path = Path::new("./src/history/session_history.txt");
     //let numerals: Vec<Vec<String>> = build_ascii_numerals("/home/drc/GITHUB/rustyTomato/src/ascii_art/ascii_numbers.txt");
     // Must convert &Path to &str and unwrap the result of the .to_str() func
     let numerals: Vec<Vec<String>> = build_ascii_numerals(file_path.to_str().unwrap());
@@ -51,10 +52,11 @@ fn main() {
         // let calculated_time = create_time(user_time_input.0, user_time_input.1);
         //
         // timer(calculated_time, numerals);
+        write_session_history(session_file_path.to_str().unwrap());
 
         break;
     }
-    //println!("Hello, world!");
+    println!("Ending Program");
     //println!("{:?}", calculated_time);
 }
 
@@ -158,7 +160,7 @@ fn pretty_display(min:u64, sec:u64, numerals: &Vec<Vec<String>>) {
     print!("{esc}c", esc = 27 as char);
 
     // create a nice display of time
-    println!("{}   {}", min, sec);
+    println!("{}   {}\n", min, sec);
     //println!("{}   {}", numerals.get(min).unwrap(), numerals.get(sec).unwrap())
     //println!("{}     {}", numerals.get(0).unwrap(), numerals.get(1).unwrap())
     // Minutes
@@ -170,6 +172,27 @@ fn pretty_display(min:u64, sec:u64, numerals: &Vec<Vec<String>>) {
         println!("{}", numerals[sec][j]);
     }
 
+
+}
+
+
+fn write_session_history(filepath: &str) -> (){
+
+    println!("Writing Session History...");
+    //let file = File::open(filepath).unwrap();
+    // Open a file with append option
+    let mut data_file = OpenOptions::new()
+        .append(true)
+        .open(filepath)
+        .expect("cannot open file");
+    // let mut writer = BufWriter::new(file);
+    // writer.write_all(b"This is the first line.\n").unwrap();
+    // writer.write_all(b"This is the second line.\n").unwrap();
+
+    // Write to a file
+    data_file
+        .write("I am learning Rust!".as_bytes())
+        .expect("write failed");
 
 }
 
