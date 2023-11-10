@@ -5,6 +5,7 @@ use std::fs::{File, OpenOptions};
 use std::io::BufReader;
 use std::io::prelude::*;
 use chrono::prelude::*;
+use lowcharts::plot;
 
 
 #[derive(Debug)]
@@ -21,6 +22,10 @@ enum TimeUnitOrBreak {
 
 fn main() {
 
+    // Testing plotting
+    print!("PLOT HISTORY TEST");
+    plot_history();
+
     let mut user_time_input: TimeUnitOrBreak;
 
     // If using `cargo run` in the top level folder.
@@ -32,7 +37,7 @@ fn main() {
 
     loop {
         // Clear screen each time
-        print!("{esc}c", esc = 27 as char);
+        //print!("{esc}c", esc = 27 as char);
         println!("Welcome to the rsTomato! 🍅 \nInput the desired timer length and press enter!\n");
 
         user_time_input = get_time_input();
@@ -315,4 +320,33 @@ fn build_ascii_numerals(filepath: &str) -> Vec<Vec<String>> {
     // Return vector containing string slices that represent the numerals.
     let numerals = new_numeral;
     numerals
+}
+
+fn plot_history(){
+
+    // READ TEXT FILE
+    let filepath = Path::new("./src/history/test_history.txt");
+    let file = File::open(filepath).unwrap();
+    let mut reader = BufReader::new(file);
+
+    let mut tokens;
+    for line in reader.lines() {
+        // Split the line into tokens
+        tokens = line.unwrap().split(' ');
+
+        // Take the first token, which is the date
+        let date = tokens.next().unwrap();
+        //
+        // // Print the date
+        //println!("{:?}", date);
+    }
+
+
+    let vec = &[-1.0, -1.1, 2.0, 2.0, 2.1, -0.9, 11.0, 11.2, 1.9, 1.99];
+// Plot a histogram of the above vector, with 4 buckets and a precision
+// chosen by library
+    let options = plot::HistogramOptions { intervals: 4, ..Default::default() };
+    let histogram = plot::Histogram::new(vec, options);
+    print!("{}", histogram);
+
 }
