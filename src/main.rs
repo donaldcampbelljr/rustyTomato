@@ -4,6 +4,8 @@ use std::{thread, time, path::Path};
 use std::fs::{File, OpenOptions};
 use std::io::BufReader;
 use std::io::prelude::*;
+use chrono::prelude::*;
+
 
 #[derive(Debug)]
 pub enum TimeUnits{
@@ -35,6 +37,9 @@ fn main() {
 
         user_time_input = get_time_input();
 
+        let begin_time  = Utc::now();
+
+
         // if user_time_input = TimeUnitOrBreak::Str("quit".as_str()) { $
         //     break; $ $
         // }
@@ -52,7 +57,9 @@ fn main() {
         // let calculated_time = create_time(user_time_input.0, user_time_input.1);
         //
         // timer(calculated_time, numerals);
-        write_session_history(session_file_path.to_str().unwrap());
+        let end_time  = Utc::now();
+
+        write_session_history(session_file_path.to_str().unwrap(), begin_time,end_time);
 
         break;
     }
@@ -176,22 +183,23 @@ fn pretty_display(min:u64, sec:u64, numerals: &Vec<Vec<String>>) {
 }
 
 
-fn write_session_history(filepath: &str) -> (){
-
-    println!("Writing Session History...");
-    //let file = File::open(filepath).unwrap();
-    // Open a file with append option
+fn write_session_history(filepath: &str, begin:DateTime<Utc>,end:DateTime<Utc>) -> (){
     let mut data_file = OpenOptions::new()
         .append(true)
         .open(filepath)
         .expect("cannot open file");
-    // let mut writer = BufWriter::new(file);
-    // writer.write_all(b"This is the first line.\n").unwrap();
-    // writer.write_all(b"This is the second line.\n").unwrap();
 
+    let begin_string = begin.to_string();
+    let duration_string = end.signed_duration_since(begin).to_string();
+
+    // concatenate our desired output string
+    let final_string = begin_string + "  " + duration_string.as_str() + " \n";
+
+    println!("Writing Session History...");
+    println!("{}", final_string);
     // Write to a file
     data_file
-        .write("I am learning Rust!".as_bytes())
+        .write(final_string.as_bytes())
         .expect("write failed");
 
 }
