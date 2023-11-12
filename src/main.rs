@@ -6,6 +6,7 @@ use std::io::BufReader;
 use std::io::prelude::*;
 use chrono::prelude::*;
 use lowcharts::plot;
+use chrono::{DateTime, FixedOffset, NaiveDateTime, ParseError, Utc};
 
 
 #[derive(Debug)]
@@ -324,22 +325,67 @@ fn build_ascii_numerals(filepath: &str) -> Vec<Vec<String>> {
 
 fn plot_history(){
 
+    const FORMAT_STRING: &str = "%Y-%m-%d %H:%M:%S.%f UTC%z";
     // READ TEXT FILE
     let filepath = Path::new("./src/history/test_history.txt");
-    let file = File::open(filepath).unwrap();
+    let file = File::open(filepath).expect("Failed to read file; does it exist?");
     let mut reader = BufReader::new(file);
 
-    let mut tokens;
-    for line in reader.lines() {
-        // Split the line into tokens
-        tokens = line.unwrap().split(' ');
+    //let line = "2023-11-6";
+    let line2 = "2023-11-10 09:22:02.785412 UTC";
+    let naive_date = NaiveDate::parse_from_str(line2, "%Y-%m-%d %H:%M:%S.%f UTC").expect("Could not parse naive date.");
+    //let begin_time  = Utc::now().to_string();
+    //let datetime = DateTime::parse_from_str(&begin_time, FORMAT_STRING).expect("Failed to parse datetime");
+    let day_as_int = naive_date.day().to_string().parse::<u16>().unwrap();
+    println!("TESTING DATE {} \n", naive_date.day());
+    println!("day as int {} \n", day_as_int);
 
-        // Take the first token, which is the date
-        let date = tokens.next().unwrap();
-        //
-        // // Print the date
-        //println!("{:?}", date);
+    let sv1:Vec<&str> = line2.split_whitespace().collect();
+    for x in sv1.iter() {
+        println!("{}", x);
     }
+
+    let line3 = "2023-11-6 09:22:02.785412 UTC 2023-11-7 09:22:02.785412 UTC";
+    //let naive_date3 = NaiveDate::parse_from_str(line3, "%Y-%m-%d %H:%M:%S.%f UTC %Y-%m-%d %H:%M:%S.%f UTC").expect("Could not parse naive date.");
+
+    let parts: Vec<&str> = line3.split(' ').collect();
+    let datetime1 = NaiveDate::parse_from_str(parts[0], "%Y-%m-%d")
+        .expect("Failed to parse datetime");
+    //let datetime2 = NaiveDate::parse_from_str(parts[1], "%H:%M:%S.%f")
+    //.expect("Failed to parse datetime");
+
+    println!("\n datetime1   {}", datetime1); //2023-11-6
+    println!("\n parts[1]  {}", parts[1]); //09:22:02.785412
+    println!("\n parts[2]  {}", parts[2]); //UTC
+    println!("\n parts[3]  {}", parts[3]); // 2023-11-6
+    println!("\n parts[4]  {}", parts[4]); //09:22:02.785412
+    println!("\n parts[5]  {}", parts[5]); //UTC
+
+
+    let line4 = "2023-11-10 09:22:02.785412 UTC  PT2.006392S";
+    let parts_line4: Vec<&str> = line4.split_whitespace().collect();
+
+    println!("\n\n");
+    println!("{} {} {} {}", parts_line4[0], parts_line4[1], parts_line4[2], parts_line4[3]);
+
+
+        // for line in reader.lines(){
+        //     let line = line.expect("Failed to read line");
+        //     let offset: FixedOffset = "+02:00".parse().expect("Failed to parse offset");
+        //     let datetime = DateTime::parse_from_str(&line, FORMAT_STRING).expect("Failed to parse datetime");
+        //     println!("{} {} {}",line, offset, datetime);
+        // }
+    // let mut tokens;
+    // for line in reader.lines() {
+    //     // Split the line into tokens
+    //     tokens = line.unwrap().split(' ');
+
+    //     // Take the first token, which is the date
+    //     let date = tokens.next().unwrap();
+    //     //
+    //     // // Print the date
+    //     //println!("{:?}", date);
+    // }
 
 
     let vec = &[-1.0, -1.1, 2.0, 2.0, 2.1, -0.9, 11.0, 11.2, 1.9, 1.99];
