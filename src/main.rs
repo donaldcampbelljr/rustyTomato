@@ -54,6 +54,13 @@ fn main() {
                     break;
             
             },
+            TimeUnitOrBreak::Str(s) if s == "break\n" => {
+
+                // default to 5 minutes for a break
+                let calculated_time = create_time(300, TimeUnits::Seconds());
+                timer(calculated_time, numerals.clone());
+        
+        },
             TimeUnitOrBreak::TimeItem(time, units) => {
 
                 let calculated_time = create_time(time, units);
@@ -125,6 +132,7 @@ fn get_time_input() -> TimeUnitOrBreak {
     match lc_input_str.as_str(){
         "quit\n" => TimeUnitOrBreak::Str(lc_input_str),
         "hist\n" => TimeUnitOrBreak::Str(lc_input_str),
+        "break\n" => TimeUnitOrBreak::Str(lc_input_str),
         _ => {
             let mut split_input_iter = lc_input_str.trim().split_whitespace(); // creates an iterable
 
