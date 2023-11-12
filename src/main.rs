@@ -25,7 +25,6 @@ enum TimeUnitOrBreak {
 fn main() {
 
     // Testing plotting
-    print!("PLOT HISTORY TEST");
     plot_history();
 
     let mut user_time_input: TimeUnitOrBreak;
@@ -33,7 +32,6 @@ fn main() {
     // If using `cargo run` in the top level folder.
     let file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
     let session_file_path = Path::new("./src/history/session_history.txt");
-    //let numerals: Vec<Vec<String>> = build_ascii_numerals("/home/drc/GITHUB/rustyTomato/src/ascii_art/ascii_numbers.txt");
     // Must convert &Path to &str and unwrap the result of the .to_str() func
     let numerals: Vec<Vec<String>> = build_ascii_numerals(file_path.to_str().unwrap());
 
@@ -326,17 +324,11 @@ fn build_ascii_numerals(filepath: &str) -> Vec<Vec<String>> {
 
 fn plot_history(){
 
-    const FORMAT_STRING: &str = "%Y-%m-%d %H:%M:%S.%f UTC%z";
+    //const FORMAT_STRING: &str = "%Y-%m-%d %H:%M:%S.%f UTC%z";
     // READ TEXT FILE
-    let filepath = Path::new("./src/history/test_history.txt");
+    let filepath = Path::new("./src/history/session_history.txt");
     let file = File::open(filepath).expect("Failed to read file; does it exist?");
     let mut reader = BufReader::new(file);
-
-    let mut start_date = NaiveDate::parse_from_str("2000-1-1", "%Y-%m-%d")
-    .expect("Could not parse naive date.");
-
-    let mut count: f64 = 0.0;
-    let mut all_counts: Vec<f64> = Vec::new();
 
     let mut all_time_points: Vec<DateTime<FixedOffset>> = Vec::new();
     const OFFSET_STRING: &str = "+02:00";
@@ -359,33 +351,14 @@ fn plot_history(){
         //let tz_offset = FixedOffset::east_opt(1 * 3600);
         let datetime = NaiveDateTime::new(date,time);
         let fixed_offset_datetime: DateTime<FixedOffset> = DateTime::from_naive_utc_and_offset(datetime, offset);
+        
         all_time_points.push(fixed_offset_datetime);
-
-        if date > start_date{
-            start_date = date; // DON'T USE LET HERE! 
-            all_counts.push(count);
-            count = 0.0;
-        } else{
-            count +=1.0 ;
-        }
 
     }
 
-// Plot a histogram of the above vector, with buckets = len of vector all_counts and a precision
-// chosen by library
-    let options = plot::HistogramOptions { intervals: all_counts.len(), ..Default::default() };
-    let histogram = plot::Histogram::new(&all_counts, options);
-    print!("{}", histogram);
-
-
-    // //
-    // let mut start_date2 = NaiveDate::parse_from_str("2000-1-1", "%Y-%m-%d")
-    // .expect("Could not parse naive date.");
-
     println!("\n\n TIME HISTOGRAM");
-    let options = plot::HistogramOptions { intervals: 4, ..Default::default() };
 
-    let histogram = plot::TimeHistogram::new(4, &all_time_points);
+    let histogram = plot::TimeHistogram::new(7, &all_time_points);
     print!("{}", histogram);
 
 
