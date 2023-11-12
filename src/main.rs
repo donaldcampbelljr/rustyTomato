@@ -24,9 +24,6 @@ enum TimeUnitOrBreak {
 
 fn main() {
 
-    // Testing plotting
-    plot_history();
-
     let mut user_time_input: TimeUnitOrBreak;
 
     // If using `cargo run` in the top level folder.
@@ -44,32 +41,42 @@ fn main() {
 
         let begin_time  = Utc::now();
 
-
-        // if user_time_input = TimeUnitOrBreak::Str("quit".as_str()) { $
-        //     break; $ $
-        // }
         match user_time_input {
-            TimeUnitOrBreak::Str(s) => {break;},
+            TimeUnitOrBreak::Str(s) if s == "quit\n" => {
+                
+                break;
+            
+            },
+            TimeUnitOrBreak::Str(s) if s == "hist\n" => {
+                
+                    // Testing plotting
+                    plot_history();
+                    break;
+            
+            },
             TimeUnitOrBreak::TimeItem(time, units) => {
 
                 let calculated_time = create_time(time, units);
 
-                timer(calculated_time, numerals);
+                timer(calculated_time, numerals.clone());
+
+                let end_time  = Utc::now();
+
+                write_session_history(session_file_path.to_str().unwrap(), begin_time,end_time);
 
             },
+
+            TimeUnitOrBreak::Str(s) => {
+
+                println!("CONINUING LOOP");
+                continue;
+        
+        },
         }
 
-        // let calculated_time = create_time(user_time_input.0, user_time_input.1);
-        //
-        // timer(calculated_time, numerals);
-        let end_time  = Utc::now();
-
-        write_session_history(session_file_path.to_str().unwrap(), begin_time,end_time);
-
-        break;
     }
+
     println!("Ending Program");
-    //println!("{:?}", calculated_time);
 }
 
 
@@ -117,6 +124,7 @@ fn get_time_input() -> TimeUnitOrBreak {
 
     match lc_input_str.as_str(){
         "quit\n" => TimeUnitOrBreak::Str(lc_input_str),
+        "hist\n" => TimeUnitOrBreak::Str(lc_input_str),
         _ => {
             let mut split_input_iter = lc_input_str.trim().split_whitespace(); // creates an iterable
 
@@ -148,7 +156,6 @@ fn get_time_input() -> TimeUnitOrBreak {
 fn timer(time_seconds: u64, numerals: Vec<Vec<String>>){
     // takes in time and detracts it after pausing for one second
 
-    //let numerals: Vec<&str> = numerals;
     let mut time: u64 = time_seconds;
     let ten_millis: time::Duration = time::Duration::from_millis(1000);
     loop {
@@ -183,8 +190,7 @@ fn pretty_display(min:u64, sec:u64, numerals: &Vec<Vec<String>>) {
 
     // create a nice display of time
     println!("{}   {}\n", min, sec);
-    //println!("{}   {}", numerals.get(min).unwrap(), numerals.get(sec).unwrap())
-    //println!("{}     {}", numerals.get(0).unwrap(), numerals.get(1).unwrap())
+
     // Minutes
     for j in 0..5 {
         println!("{}", numerals[min][j]);
@@ -244,18 +250,10 @@ fn build_ascii_numerals(filepath: &str) -> Vec<Vec<String>> {
         }
     }
 
-    // println!("The length of the vector is {}", numerals.len());
-    // for k in 0..10 {
-    //     println!("{}", numerals.get(k).unwrap());
-    //     println!("\n");
-    // }
-
-
     let mut new_numeral = Vec::new();
     // Make double digits.
 
     for number in 0..60 {
-        // println!("{}",number);
         let mut temp_numeral:Vec<String> = Vec::new();
         if number < 9 {
             for i in vec![0, 6, 12, 18, 24] {
@@ -266,29 +264,11 @@ fn build_ascii_numerals(filepath: &str) -> Vec<Vec<String>> {
             }
             temp_numeral.join("\n");
 
-            // for k in 0..5 {
-            //     println!("{}", temp_numeral.get(k).unwrap());
-            // }
         }
         else {
 
-            // // This way is difficult road to travel, just use Math.
-            // // need to take the number, deconstruct it into digits and then use that digit for each respective slices.
-            // let number_string = number.to_string();//String::from(number);
-            // // Get an iterator over the characters in the number.
-            // //let mut chars = number_string.chars();
-            // // Split the number at the first character.
-            // let first = &number_string[0];
-            // let second = &number_string[1];
-            // let first_number:u32 = first.to_digit(10).unwrap();
-            // println!("FIRST NUMBER: {}", first_number);
-            // let second_number:u32 = second.to_digit(10).unwrap();
-            // println!("Second NUMBER: {}", second_number);
-
             let first:usize = (number / 10) as usize;
-            // println!("FIRST NUMBER: {}", first);
             let second:usize = (number%10) as usize;
-            // println!("Second NUMBER: {}", second);
 
             for i in vec![0, 6, 12, 18, 24] {
                 let string_slice1: &str = &numerals[first][i..(i + 6)];
@@ -299,9 +279,6 @@ fn build_ascii_numerals(filepath: &str) -> Vec<Vec<String>> {
 
             temp_numeral.join("\n");
 
-            // for k in 0..5 {
-            //     println!("{}", temp_numeral.get(k).unwrap());
-            // }
 
 
         }
@@ -309,14 +286,6 @@ fn build_ascii_numerals(filepath: &str) -> Vec<Vec<String>> {
     }
 
 
-    // println!("{:?}", new_numeral);
-    // for k in 0..5 {
-    //     for j in 0..5 {
-    //     println!("{}", new_numeral[k][j]);
-    // }
-    // }
-
-    //println!("DONE");
     // Return vector containing string slices that represent the numerals.
     let numerals = new_numeral;
     numerals
