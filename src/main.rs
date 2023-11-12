@@ -4,7 +4,8 @@ use std::{thread, time, path::Path};
 use std::fs::{File, OpenOptions};
 use std::io::BufReader;
 use std::io::prelude::*;
-use chrono::prelude::*;
+use chrono::format::Fixed;
+use chrono::{prelude::*, naive};
 use lowcharts::plot;
 use chrono::{DateTime, FixedOffset, NaiveDateTime, ParseError, Utc};
 
@@ -337,6 +338,10 @@ fn plot_history(){
     let mut count: f64 = 0.0;
     let mut all_counts: Vec<f64> = Vec::new();
 
+    let mut all_time_points: Vec<DateTime<FixedOffset>> = Vec::new();
+    const OFFSET_STRING: &str = "+02:00";
+    let offset: FixedOffset = OFFSET_STRING.parse().expect("Failed to parse offset");
+
     for line in reader.lines(){
 
         let line = line.expect("Failed to read line");
@@ -346,6 +351,15 @@ fn plot_history(){
 
         let date = NaiveDate::parse_from_str(line_parts[0], "%Y-%m-%d")
             .expect("Could not parse naive date.");
+
+        let time = NaiveTime::parse_from_str(line_parts[1], "%H:%M:%S.%f")
+            .expect("Could not parse naive time.");
+
+        // This may not be the right offset...
+        //let tz_offset = FixedOffset::east_opt(1 * 3600);
+        let datetime = NaiveDateTime::new(date,time);
+        let fixed_offset_datetime: DateTime<FixedOffset> = DateTime::from_naive_utc_and_offset(datetime, offset);
+        all_time_points.push(fixed_offset_datetime);
 
         if date > start_date{
             start_date = date; // DON'T USE LET HERE! 
@@ -362,5 +376,18 @@ fn plot_history(){
     let options = plot::HistogramOptions { intervals: all_counts.len(), ..Default::default() };
     let histogram = plot::Histogram::new(&all_counts, options);
     print!("{}", histogram);
+
+
+    // //
+    // let mut start_date2 = NaiveDate::parse_from_str("2000-1-1", "%Y-%m-%d")
+    // .expect("Could not parse naive date.");
+
+    println!("\n\n TIME HISTOGRAM");
+    let options = plot::HistogramOptions { intervals: 4, ..Default::default() };
+
+    let histogram = plot::TimeHistogram::new(4, &all_time_points);
+    print!("{}", histogram);
+
+
 
 }
