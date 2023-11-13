@@ -10,6 +10,8 @@ use lowcharts::plot;
 use chrono::{DateTime, FixedOffset, NaiveDateTime, ParseError, Utc};
 use crate::history::plot_history;
 
+use clap::{Arg, command};
+
 mod history;
 mod timer;
 mod numerals;
@@ -30,6 +32,29 @@ enum TimeUnitOrBreak {
 
 
 fn main() {
+
+    // Build method NOT derive method
+
+    // positional arguments
+    // let match_result = command!().arg(
+    //     Arg::new("firstname")
+    // ).arg(
+    //     Arg::new("lastname")
+    // )
+    //     .get_matches();
+    // println!("{:?}", match_result);
+
+    let match_result = command!().about("This application is a simple CLI pomodoro timer.").arg(
+        Arg::new("firstname").short('f').long("first-name")
+    ).arg(
+        Arg::new("lastname").short('l').long("last-name")
+    ).arg(
+        Arg::new("fluffy").long("fluffy")
+    )
+        .get_matches();
+
+    //println!("{:?}", match_result);
+
 
     let mut user_time_input: TimeUnitOrBreak;
 
