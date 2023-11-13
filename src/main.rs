@@ -8,6 +8,7 @@ use chrono::format::Fixed;
 use chrono::{prelude::*, naive};
 use lowcharts::plot;
 use chrono::{DateTime, FixedOffset, NaiveDateTime, ParseError, Utc};
+use crate::history::plot_history;
 
 mod history;
 mod timer;
@@ -24,7 +25,7 @@ pub enum TimeUnits{
 enum TimeUnitOrBreak {
     Str(String),
     TimeItem(u64, TimeUnits),
-    History(u16),
+    History(usize),
 }
 
 
@@ -72,9 +73,9 @@ fn main() {
 
             },
 
-            TimeUnitOrBreak::History(_) =>{
-                println!("CONINUING LOOP");
-                continue;
+            TimeUnitOrBreak::History(time_bucket) =>{
+                println!("Some history {}", time_bucket);
+                plot_history(time_bucket);
             }
 
             TimeUnitOrBreak::Str(s) => {
@@ -137,14 +138,15 @@ fn get_time_input() -> TimeUnitOrBreak {
     if split_input_iter.len() == 1{
 
         match split_input_iter[0]{
-            "quit\n" => TimeUnitOrBreak::Str(String::from(split_input_iter[0])),
-            "break\n" => TimeUnitOrBreak::Str(String::from(split_input_iter[0])),
-            "hist\n" => TimeUnitOrBreak::Str(String::from(split_input_iter[0])),
-            _ => TimeUnitOrBreak::Str(String::from("break"))
+            "quit" => TimeUnitOrBreak::Str(String::from("quit\n")),
+            "break" => TimeUnitOrBreak::Str(String::from("break\n")),
+            "hist" => TimeUnitOrBreak::History(7),
+            _ => TimeUnitOrBreak::Str(String::from("quit\n"))
         }
     }
 
     else if split_input_iter.len() == 2 {
+
 
         let time_number: u64 = split_input_iter[0].parse().unwrap();
         let time_unit = split_input_iter[1].to_string(); // takes the 'next' str in the iterable (this is the second one)
@@ -164,7 +166,7 @@ fn get_time_input() -> TimeUnitOrBreak {
     }
 
     else{
-        TimeUnitOrBreak::Str(String::from("break"))
+        TimeUnitOrBreak::Str(String::from("quit\n"))
     }
 
 }

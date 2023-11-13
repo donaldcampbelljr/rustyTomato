@@ -29,7 +29,7 @@ pub fn write_session_history(filepath: &str, begin:DateTime<Utc>,end:DateTime<Ut
 
 }
 
-pub fn plot_history(){
+pub fn plot_history(time_bucket:usize){
 
     //const FORMAT_STRING: &str = "%Y-%m-%d %H:%M:%S.%f UTC%z";
     // READ TEXT FILE
@@ -65,7 +65,7 @@ pub fn plot_history(){
 
     println!("\n\n TIME HISTOGRAM");
 
-    let histogram = plot::TimeHistogram::new(7, &all_time_points);
+    let histogram = plot::TimeHistogram::new(time_bucket, &all_time_points);
     print!("{}", histogram);
 
 
