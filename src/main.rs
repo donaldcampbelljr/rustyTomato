@@ -17,11 +17,14 @@ mod numerals;
 pub enum TimeUnits{
     Minutes(),
     Seconds(),
+    Days(),
+    Months(),
 }
 
 enum TimeUnitOrBreak {
     Str(String),
     TimeItem(u64, TimeUnits),
+    History(u16),
 }
 
 
@@ -30,10 +33,10 @@ fn main() {
     let mut user_time_input: TimeUnitOrBreak;
 
     // If using `cargo run` in the top level folder.
-    let file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
+    let numerals_file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
     let session_file_path = Path::new("./src/history/session_history.txt");
     // Must convert &Path to &str and unwrap the result of the .to_str() func
-    let numerals: Vec<Vec<String>> = numerals::build_ascii_numerals(file_path.to_str().unwrap());
+    let numerals: Vec<Vec<String>> = numerals::build_ascii_numerals(numerals_file_path.to_str().unwrap());
 
     loop {
         // Clear screen each time
@@ -48,13 +51,6 @@ fn main() {
             TimeUnitOrBreak::Str(s) if s == "quit\n" => {
                 
                 break;
-            
-            },
-            TimeUnitOrBreak::Str(s) if s == "hist\n" => {
-                
-                    // Testing plotting
-                    history::plot_history();
-                    break;
             
             },
             TimeUnitOrBreak::Str(s) if s == "break\n" => {
@@ -75,6 +71,11 @@ fn main() {
                 history::write_session_history(session_file_path.to_str().unwrap(), begin_time,end_time);
 
             },
+
+            TimeUnitOrBreak::History(_) =>{
+                println!("CONINUING LOOP");
+                continue;
+            }
 
             TimeUnitOrBreak::Str(s) => {
 
@@ -131,36 +132,40 @@ fn get_time_input() -> TimeUnitOrBreak {
     // because the &str will no longer exist out of scope but the String will?
 
     let lc_input_str = input_str.to_lowercase(); // makes lower case
+    let mut split_input_iter: Vec<&str> = lc_input_str.trim().split_whitespace().collect();
 
-    match lc_input_str.as_str(){
-        "quit\n" => TimeUnitOrBreak::Str(lc_input_str),
-        "hist\n" => TimeUnitOrBreak::Str(lc_input_str),
-        "break\n" => TimeUnitOrBreak::Str(lc_input_str),
-        _ => {
-            let mut split_input_iter = lc_input_str.trim().split_whitespace(); // creates an iterable
+    if split_input_iter.len() == 1{
 
-            let time_number= split_input_iter.next().unwrap_or_default();// takes the 'next' str in the iterable (this is the first one)
-            let time_number: u64 = time_number.parse().unwrap();
-            // *time_number as u64;
-            let time_unit = split_input_iter.next().unwrap_or_default().to_string(); // takes the 'next' str in the iterable (this is the second one)
-
-            let time_units = match time_unit.as_str(){
-                "min" => TimeUnits::Minutes(),
-                "minutes" => TimeUnits::Minutes(),
-                "m" => TimeUnits::Minutes(),
-                "seconds" => TimeUnits::Seconds(),
-                "sec" => TimeUnits::Seconds(),
-                "s" => TimeUnits::Seconds(),
-                _ => TimeUnits::Minutes(), // Basically just assume minutes
-            };
-
-            TimeUnitOrBreak::TimeItem(time_number, time_units)
-
+        match split_input_iter[0]{
+            "quit\n" => TimeUnitOrBreak::Str(String::from(split_input_iter[0])),
+            "break\n" => TimeUnitOrBreak::Str(String::from(split_input_iter[0])),
+            "hist\n" => TimeUnitOrBreak::Str(String::from(split_input_iter[0])),
+            _ => TimeUnitOrBreak::Str(String::from("break"))
         }
+    }
+
+    else if split_input_iter.len() == 2 {
+
+        let time_number: u64 = split_input_iter[0].parse().unwrap();
+        let time_unit = split_input_iter[1].to_string(); // takes the 'next' str in the iterable (this is the second one)
+
+        let time_units = match time_unit.as_str(){
+            "min" => TimeUnits::Minutes(),
+            "minutes" => TimeUnits::Minutes(),
+            "m" => TimeUnits::Minutes(),
+            "seconds" => TimeUnits::Seconds(),
+            "sec" => TimeUnits::Seconds(),
+            "s" => TimeUnits::Seconds(),
+            _ => TimeUnits::Minutes(), // Basically just assume minutes
+        };
+
+        TimeUnitOrBreak::TimeItem(time_number, time_units)
 
     }
 
-
+    else{
+        TimeUnitOrBreak::Str(String::from("break"))
+    }
 
 }
 
