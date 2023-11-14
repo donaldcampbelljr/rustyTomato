@@ -67,7 +67,7 @@ fn main() {
             "history" => {
 
                 // Just take the input time numbers for now and treat them as buckets...
-                plot_history(5)
+                plot_history(time)
             },
             _ => {
                 println!("Input function does not exist...Ending Program...")
