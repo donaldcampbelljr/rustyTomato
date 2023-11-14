@@ -35,7 +35,7 @@ pub fn plot_history(time_bucket:usize){
     // READ TEXT FILE
     let filepath = Path::new("./src/history/session_history.txt");
     let file = File::open(filepath).expect("Failed to read file; does it exist?");
-    let mut reader = BufReader::new(file);
+    let reader = BufReader::new(file);
 
     let mut all_time_points: Vec<DateTime<FixedOffset>> = Vec::new();
     const OFFSET_STRING: &str = "+02:00";

@@ -1,13 +1,5 @@
-
-use std::io::{self, BufWriter, Write};
-use std::{thread, time, path::Path};
-use std::fs::{File, OpenOptions};
-use std::io::BufReader;
-use std::io::prelude::*;
-use chrono::format::Fixed;
-use chrono::{prelude::*, naive};
-use lowcharts::plot;
-use chrono::{DateTime, FixedOffset, NaiveDateTime, ParseError, Utc};
+use std::{path::Path};
+use chrono::{Utc};
 use crate::history::plot_history;
 
 use clap::{Arg, command};
@@ -25,9 +17,7 @@ pub enum TimeUnits{
 }
 
 enum TimeUnitOrBreak {
-    Str(String),
     TimeItem(usize, TimeUnits),
-    History(usize),
 }
 
 
@@ -42,7 +32,7 @@ fn main() {
     )
         .get_matches();
 
-    let mut user_time_input: TimeUnitOrBreak;
+    let user_time_input: TimeUnitOrBreak;
 
     // If using `cargo run` in the top level folder.
     let numerals_file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
@@ -85,9 +75,7 @@ fn main() {
         }
 
         }
-        _ => {
-            println!("Time and/or Units not Valid...Ending Program...")
-        }
+
     }
 
     println!("Ending Program");
@@ -97,7 +85,7 @@ fn main() {
 
 fn create_time(time_numbers: usize, time_tuple: TimeUnits) -> usize {
 
-    let mut time_in_seconds:usize = 1*10;
+    let time_in_seconds:usize;
 
     // take the user input and conver to mins and seconds
     println!("{} == time_numbers", time_numbers);
@@ -115,12 +103,6 @@ fn create_time(time_numbers: usize, time_tuple: TimeUnits) -> usize {
 }
 
 fn get_time_input(time_number: usize, time_units: String) -> TimeUnitOrBreak {
-
-    // Note, had to use match statement and pass a String to TimeUnitorBreak not a &str
-    // because the &str will no longer exist out of scope but the String will?
-
-    let lc_input_str = time_units.to_lowercase(); // makes lower case
-    //let mut split_input_iter: Vec<&str> = lc_input_str.trim().split_whitespace().collect();
 
     let time_units = match time_units.as_str(){
         "min" => TimeUnits::Minutes(),
