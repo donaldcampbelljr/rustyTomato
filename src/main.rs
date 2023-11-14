@@ -33,6 +33,10 @@ enum TimeUnitOrBreak {
 
 fn main() {
 
+    //timer 25 min
+    //hist 5 days
+    //break 5 min
+
     // Build method NOT derive method
 
     // positional arguments
@@ -45,16 +49,15 @@ fn main() {
     // println!("{:?}", match_result);
 
     let match_result = command!().about("This application is a simple CLI pomodoro timer.").arg(
-        Arg::new("firstname").short('f').long("first-name")
+        Arg::new("timer").short('t').default_value("timer")
     ).arg(
-        Arg::new("lastname").short('l').long("last-name")
+        Arg::new("time_number").short('n').default_value("5")
     ).arg(
-        Arg::new("fluffy").long("fluffy")
+        Arg::new("time_units").short('u').default_value("s")
     )
         .get_matches();
 
     //println!("{:?}", match_result);
-
 
     let mut user_time_input: TimeUnitOrBreak;
 
@@ -64,53 +67,60 @@ fn main() {
     // Must convert &Path to &str and unwrap the result of the .to_str() func
     let numerals: Vec<Vec<String>> = numerals::build_ascii_numerals(numerals_file_path.to_str().unwrap());
 
-    loop {
-        // Clear screen each time
-        //print!("{esc}c", esc = 27 as char);
-        println!("Welcome to the rsTomato! 🍅 \nInput the desired timer length and press enter!\n");
+    let func = match_result.get_one::<String>("timer").expect("expecting string").to_string();
+    let time_number:u64 = match_result.get_one::<u64>("time_number").expect("expecting u64").to_string().parse().unwrap();
+    let time_units = match_result.get_one::<String>("time_units").expect("expecting string").to_string();
 
-        user_time_input = get_time_input();
+    user_time_input = get_time_input(time_number, time_units);
 
-        let begin_time  = Utc::now();
 
-        match user_time_input {
-            TimeUnitOrBreak::Str(s) if s == "quit\n" => {
-                
-                break;
-            
-            },
-            TimeUnitOrBreak::Str(s) if s == "break\n" => {
+    // Clear screen each time
+    //print!("{esc}c", esc = 27 as char);
+    println!("Welcome to the rsTomato! 🍅 \n");
 
-                // default to 5 minutes for a break
-                let calculated_time = create_time(300, TimeUnits::Seconds());
-                timer::timer(calculated_time, numerals.clone());
-        
+    let begin_time  = Utc::now();
+
+    match func.as_str(){
+        "timer" => TimeUnits::Minutes(),
+        "break" => TimeUnits::Minutes(),
+        "history" => TimeUnits::Minutes(),
+        _ => TimeUnits::Minutes(),
+    }
+
+    match user_time_input {
+        TimeUnitOrBreak::Str(s) if s == "quit\n" => {
+
+
         },
-            TimeUnitOrBreak::TimeItem(time, units) => {
+        TimeUnitOrBreak::Str(s) if s == "break\n" => {
 
-                let calculated_time = create_time(time, units);
+            // default to 5 minutes for a break
+            let calculated_time = create_time(300, TimeUnits::Seconds());
+            timer::timer(calculated_time, numerals.clone());
 
-                timer::timer(calculated_time, numerals.clone());
+    },
+        TimeUnitOrBreak::TimeItem(time, units) => {
 
-                let end_time  = Utc::now();
+            let calculated_time = create_time(time, units);
 
-                history::write_session_history(session_file_path.to_str().unwrap(), begin_time,end_time);
+            timer::timer(calculated_time, numerals.clone());
 
-            },
+            let end_time  = Utc::now();
 
-            TimeUnitOrBreak::History(time_bucket) =>{
-                println!("Some history {}", time_bucket);
-                plot_history(time_bucket);
-            }
+            history::write_session_history(session_file_path.to_str().unwrap(), begin_time,end_time);
 
-            TimeUnitOrBreak::Str(s) => {
-
-                println!("CONINUING LOOP");
-                continue;
-        
         },
+
+        TimeUnitOrBreak::History(time_bucket) =>{
+            println!("Some history {}", time_bucket);
+            plot_history(time_bucket);
         }
 
+        TimeUnitOrBreak::Str(s) => {
+
+            println!("CONINUING LOOP");
+
+    },
     }
 
     println!("Ending Program");
@@ -137,63 +147,29 @@ fn create_time(time_numbers: u64, time_tuple: TimeUnits) -> u64 {
 
 }
 
-fn get_time_input() -> TimeUnitOrBreak {
-
-    // Prompting the User
-
-    println!("e.g. 25 min, 300 seconds");
-    println!(">  ");
-    io::stdout().flush().unwrap();
-
-    let mut input_str = String::new();
-
-    io::stdin()
-        .read_line(&mut input_str)
-        .expect("Failed to read input");
-
-    println!("");
-
+fn get_time_input(time_number: u64, time_units: String) -> TimeUnitOrBreak {
 
     // Note, had to use match statement and pass a String to TimeUnitorBreak not a &str
     // because the &str will no longer exist out of scope but the String will?
 
-    let lc_input_str = input_str.to_lowercase(); // makes lower case
-    let mut split_input_iter: Vec<&str> = lc_input_str.trim().split_whitespace().collect();
+    let lc_input_str = time_units.to_lowercase(); // makes lower case
+    //let mut split_input_iter: Vec<&str> = lc_input_str.trim().split_whitespace().collect();
 
-    if split_input_iter.len() == 1{
+    let time_units = match time_units.as_str(){
+        "min" => TimeUnits::Minutes(),
+        "minutes" => TimeUnits::Minutes(),
+        "m" => TimeUnits::Minutes(),
+        "seconds" => TimeUnits::Seconds(),
+        "sec" => TimeUnits::Seconds(),
+        "s" => TimeUnits::Seconds(),
+        _ => TimeUnits::Minutes(), // Basically just assume minutes
+    };
 
-        match split_input_iter[0]{
-            "quit" => TimeUnitOrBreak::Str(String::from("quit\n")),
-            "break" => TimeUnitOrBreak::Str(String::from("break\n")),
-            "hist" => TimeUnitOrBreak::History(7),
-            _ => TimeUnitOrBreak::Str(String::from("quit\n"))
-        }
-    }
-
-    else if split_input_iter.len() == 2 {
-
-
-        let time_number: u64 = split_input_iter[0].parse().unwrap();
-        let time_unit = split_input_iter[1].to_string(); // takes the 'next' str in the iterable (this is the second one)
-
-        let time_units = match time_unit.as_str(){
-            "min" => TimeUnits::Minutes(),
-            "minutes" => TimeUnits::Minutes(),
-            "m" => TimeUnits::Minutes(),
-            "seconds" => TimeUnits::Seconds(),
-            "sec" => TimeUnits::Seconds(),
-            "s" => TimeUnits::Seconds(),
-            _ => TimeUnits::Minutes(), // Basically just assume minutes
-        };
-
-        TimeUnitOrBreak::TimeItem(time_number, time_units)
+    TimeUnitOrBreak::TimeItem(time_number, time_units)
 
     }
 
-    else{
-        TimeUnitOrBreak::Str(String::from("quit\n"))
-    }
 
-}
+
 
 
