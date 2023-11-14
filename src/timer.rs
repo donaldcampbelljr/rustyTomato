@@ -33,7 +33,7 @@ pub fn pretty_display(min:usize, sec:usize, numerals: &Vec<Vec<String>>) {
 
     // Clear screen each time
     print!("{esc}c", esc = 27 as char);
-    println!("rsTomato! 🍅 \nRemaining: {} min {} sec \n", min, sec);
+    println!("rsPomodoro! 🍅 \nRemaining: {} min {} sec \n", min, sec);
 
     // Minutes
     for j in 0..5 {

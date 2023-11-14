@@ -46,7 +46,7 @@ fn main() {
 
     user_time_input = get_time_input(time_number, time_units);
 
-    println!("Welcome to the rsTomato! 🍅 \n");
+    println!("Welcome to the rsPomodoro! 🍅 \n");
 
     let begin_time  = Utc::now();
 
