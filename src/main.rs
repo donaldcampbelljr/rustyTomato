@@ -1,4 +1,4 @@
-use std::{path::Path};
+use std::{path::Path, path::PathBuf};
 use chrono::{Utc};
 use crate::history::plot_history;
 
@@ -34,9 +34,12 @@ fn main() {
 
     let user_time_input: TimeUnitOrBreak;
 
-    // If using `cargo run` in the top level folder.
-    let numerals_file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
-    let session_file_path = Path::new("./src/history/session_history.txt");
+    // Must obtain crate path such that build can find the resources.
+    let path_to_crate= env!("CARGO_MANIFEST_DIR");
+    //let numerals_file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
+    let numerals_file_path = PathBuf::from(path_to_crate).join(Path::new("./src/ascii_art/ascii_numbers.txt"));
+    //let session_file_path = Path::new("./src/history/session_history.txt");
+    let session_file_path = PathBuf::from(path_to_crate).join(Path::new("./src/history/session_history.txt"));
     // Must convert &Path to &str and unwrap the result of the .to_str() func
     let numerals: Vec<Vec<String>> = numerals::build_ascii_numerals(numerals_file_path.to_str().unwrap());
 
