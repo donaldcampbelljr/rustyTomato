@@ -1,13 +1,8 @@
+use std::{path::Path, path::PathBuf};
+use chrono::{Utc};
+use crate::history::plot_history;
 
-use std::io::{self, BufWriter, Write};
-use std::{thread, time, path::Path};
-use std::fs::{File, OpenOptions};
-use std::io::BufReader;
-use std::io::prelude::*;
-use chrono::format::Fixed;
-use chrono::{prelude::*, naive};
-use lowcharts::plot;
-use chrono::{DateTime, FixedOffset, NaiveDateTime, ParseError, Utc};
+use clap::{Arg, command};
 
 mod history;
 mod timer;
@@ -17,71 +12,71 @@ mod numerals;
 pub enum TimeUnits{
     Minutes(),
     Seconds(),
+    Days(),
+    Months(),
 }
 
 enum TimeUnitOrBreak {
-    Str(String),
-    TimeItem(u64, TimeUnits),
+    TimeItem(usize, TimeUnits),
 }
 
 
 fn main() {
 
-    let mut user_time_input: TimeUnitOrBreak;
+    let match_result = command!().about("This application is a simple CLI pomodoro timer.").arg(
+        Arg::new("timer").short('t').default_value("timer")
+    ).arg(
+        Arg::new("time_number").short('n').default_value("5").value_parser(clap::value_parser!(usize))
+    ).arg(
+        Arg::new("time_units").short('u').default_value("s")
+    )
+        .get_matches();
 
-    // If using `cargo run` in the top level folder.
-    let file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
-    let session_file_path = Path::new("./src/history/session_history.txt");
+    let user_time_input: TimeUnitOrBreak;
+
+    // Must obtain crate path such that build can find the resources.
+    let path_to_crate= env!("CARGO_MANIFEST_DIR");
+    //let numerals_file_path = Path::new("./src/ascii_art/ascii_numbers.txt");
+    let numerals_file_path = PathBuf::from(path_to_crate).join(Path::new("./src/ascii_art/ascii_numbers.txt"));
+    //let session_file_path = Path::new("./src/history/session_history.txt");
+    let session_file_path = PathBuf::from(path_to_crate).join(Path::new("./src/history/session_history.txt"));
     // Must convert &Path to &str and unwrap the result of the .to_str() func
-    let numerals: Vec<Vec<String>> = numerals::build_ascii_numerals(file_path.to_str().unwrap());
+    let numerals: Vec<Vec<String>> = numerals::build_ascii_numerals(numerals_file_path.to_str().unwrap());
 
-    loop {
-        // Clear screen each time
-        //print!("{esc}c", esc = 27 as char);
-        println!("Welcome to the rsTomato! 🍅 \nInput the desired timer length and press enter!\n");
+    let func = match_result.get_one::<String>("timer").expect("expecting string").to_string();
+    let time_number:usize = match_result.get_one::<usize>("time_number").expect("expecting u64").to_string().parse().unwrap();
+    let time_units = match_result.get_one::<String>("time_units").expect("expecting string").to_string();
 
-        user_time_input = get_time_input();
+    user_time_input = get_time_input(time_number, time_units);
 
-        let begin_time  = Utc::now();
+    println!("Welcome to the rsPomodoro! 🍅 \n");
 
-        match user_time_input {
-            TimeUnitOrBreak::Str(s) if s == "quit\n" => {
-                
-                break;
-            
+    let begin_time  = Utc::now();
+
+    match user_time_input {
+        TimeUnitOrBreak::TimeItem(time, units) => {
+        match func.as_str() {
+            "timer" => {
+                let calculated_time = create_time(time, units);
+                timer::timer(calculated_time, numerals.clone());
+                let end_time = Utc::now();
+                history::write_session_history(session_file_path.to_str().unwrap(), begin_time, end_time);
             },
-            TimeUnitOrBreak::Str(s) if s == "hist\n" => {
-                
-                    // Testing plotting
-                    history::plot_history();
-                    break;
-            
-            },
-            TimeUnitOrBreak::Str(s) if s == "break\n" => {
-
+            "break" => {
                 // default to 5 minutes for a break
                 let calculated_time = create_time(300, TimeUnits::Seconds());
                 timer::timer(calculated_time, numerals.clone());
-        
-        },
-            TimeUnitOrBreak::TimeItem(time, units) => {
-
-                let calculated_time = create_time(time, units);
-
-                timer::timer(calculated_time, numerals.clone());
-
-                let end_time  = Utc::now();
-
-                history::write_session_history(session_file_path.to_str().unwrap(), begin_time,end_time);
-
             },
+            "history" => {
 
-            TimeUnitOrBreak::Str(s) => {
+                // Just take the input time numbers for now and treat them as buckets...
+                plot_history(time)
+            },
+            _ => {
+                println!("Input function does not exist...Ending Program...")
+            },
+        }
 
-                println!("CONINUING LOOP");
-                continue;
-        
-        },
         }
 
     }
@@ -91,9 +86,9 @@ fn main() {
 
 
 
-fn create_time(time_numbers: u64, time_tuple: TimeUnits) -> u64 {
+fn create_time(time_numbers: usize, time_tuple: TimeUnits) -> usize {
 
-    let mut time_in_seconds:u64 = 1*10;
+    let time_in_seconds:usize;
 
     // take the user input and conver to mins and seconds
     println!("{} == time_numbers", time_numbers);
@@ -110,58 +105,23 @@ fn create_time(time_numbers: u64, time_tuple: TimeUnits) -> u64 {
 
 }
 
-fn get_time_input() -> TimeUnitOrBreak {
+fn get_time_input(time_number: usize, time_units: String) -> TimeUnitOrBreak {
 
-    // Prompting the User
+    let time_units = match time_units.as_str(){
+        "min" => TimeUnits::Minutes(),
+        "minutes" => TimeUnits::Minutes(),
+        "m" => TimeUnits::Minutes(),
+        "seconds" => TimeUnits::Seconds(),
+        "sec" => TimeUnits::Seconds(),
+        "s" => TimeUnits::Seconds(),
+        _ => TimeUnits::Minutes(), // Basically just assume minutes
+    };
 
-    println!("e.g. 25 min, 300 seconds");
-    println!(">  ");
-    io::stdout().flush().unwrap();
-
-    let mut input_str = String::new();
-
-    io::stdin()
-        .read_line(&mut input_str)
-        .expect("Failed to read input");
-
-    println!("");
-
-
-    // Note, had to use match statement and pass a String to TimeUnitorBreak not a &str
-    // because the &str will no longer exist out of scope but the String will?
-
-    let lc_input_str = input_str.to_lowercase(); // makes lower case
-
-    match lc_input_str.as_str(){
-        "quit\n" => TimeUnitOrBreak::Str(lc_input_str),
-        "hist\n" => TimeUnitOrBreak::Str(lc_input_str),
-        "break\n" => TimeUnitOrBreak::Str(lc_input_str),
-        _ => {
-            let mut split_input_iter = lc_input_str.trim().split_whitespace(); // creates an iterable
-
-            let time_number= split_input_iter.next().unwrap_or_default();// takes the 'next' str in the iterable (this is the first one)
-            let time_number: u64 = time_number.parse().unwrap();
-            // *time_number as u64;
-            let time_unit = split_input_iter.next().unwrap_or_default().to_string(); // takes the 'next' str in the iterable (this is the second one)
-
-            let time_units = match time_unit.as_str(){
-                "min" => TimeUnits::Minutes(),
-                "minutes" => TimeUnits::Minutes(),
-                "m" => TimeUnits::Minutes(),
-                "seconds" => TimeUnits::Seconds(),
-                "sec" => TimeUnits::Seconds(),
-                "s" => TimeUnits::Seconds(),
-                _ => TimeUnits::Minutes(), // Basically just assume minutes
-            };
-
-            TimeUnitOrBreak::TimeItem(time_number, time_units)
-
-        }
+    TimeUnitOrBreak::TimeItem(time_number, time_units)
 
     }
 
 
 
-}
 
 

@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{path::Path, path::PathBuf};
 use std::fs::{File, OpenOptions};
 use std::io::BufReader;
 use std::io::prelude::*;
@@ -29,13 +29,16 @@ pub fn write_session_history(filepath: &str, begin:DateTime<Utc>,end:DateTime<Ut
 
 }
 
-pub fn plot_history(){
+pub fn plot_history(time_bucket:usize){
 
     //const FORMAT_STRING: &str = "%Y-%m-%d %H:%M:%S.%f UTC%z";
     // READ TEXT FILE
-    let filepath = Path::new("./src/history/session_history.txt");
+    // Must obtain crate path such that build can find the resources.
+    let path_to_crate= env!("CARGO_MANIFEST_DIR");
+    let filepath = PathBuf::from(path_to_crate).join(Path::new("./src/history/session_history.txt"));
+    //let filepath = Path::new("./src/history/session_history.txt");
     let file = File::open(filepath).expect("Failed to read file; does it exist?");
-    let mut reader = BufReader::new(file);
+    let reader = BufReader::new(file);
 
     let mut all_time_points: Vec<DateTime<FixedOffset>> = Vec::new();
     const OFFSET_STRING: &str = "+02:00";
@@ -63,9 +66,9 @@ pub fn plot_history(){
 
     }
 
-    println!("\n\n TIME HISTOGRAM");
+    println!("TIME HISTOGRAM");
 
-    let histogram = plot::TimeHistogram::new(7, &all_time_points);
+    let histogram = plot::TimeHistogram::new(time_bucket, &all_time_points);
     print!("{}", histogram);
 
 

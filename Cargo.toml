@@ -1,5 +1,5 @@
 [package]
-name = "rsTomato"
+name = "rsPomodoro"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,4 +7,8 @@ edition = "2021"
 
 [dependencies]
 chrono = { version = "0.4.31", features = [] }
+clap = { version = "4.4.8", features = ["cargo"] }
 lowcharts = "*"
+
+#[package.metadata]
+#include = ["src/ascii_art/ascii_numbers.txt", "src/history/session_history.txt"]

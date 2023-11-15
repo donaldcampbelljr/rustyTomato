@@ -5,7 +5,7 @@ use std::fs::File;
 pub fn build_ascii_numerals(filepath: &str) -> Vec<Vec<String>> {
 
     let file = File::open(filepath).unwrap();
-    let mut reader = BufReader::new(file);
+    let reader = BufReader::new(file);
 
     // numerals will be final vector returned
     let mut temp_batch = Vec::new();

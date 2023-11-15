@@ -1,9 +1,9 @@
 use std::{thread, time};
 
-pub fn timer(time_seconds: u64, numerals: Vec<Vec<String>>){
+pub fn timer(time_seconds: usize, numerals: Vec<Vec<String>>){
     // takes in time and detracts it after pausing for one second
 
-    let mut time: u64 = time_seconds;
+    let mut time: usize = time_seconds;
     let ten_millis: time::Duration = time::Duration::from_millis(1000);
     loop {
 
@@ -27,15 +27,13 @@ pub fn timer(time_seconds: u64, numerals: Vec<Vec<String>>){
 
 }
 
-pub fn pretty_display(min:u64, sec:u64, numerals: &Vec<Vec<String>>) {
+pub fn pretty_display(min:usize, sec:usize, numerals: &Vec<Vec<String>>) {
     let min = min as usize;
     let sec = sec as usize;
 
     // Clear screen each time
     print!("{esc}c", esc = 27 as char);
-
-    // create a nice display of time
-    println!("{}   {}\n", min, sec);
+    println!("rsPomodoro! 🍅 \nRemaining: {} min {} sec \n", min, sec);
 
     // Minutes
     for j in 0..5 {
