@@ -1,4 +1,5 @@
-use std::{path::Path, path::PathBuf};
+use std::{io, path::Path, path::PathBuf};
+use std::io::Write;
 use chrono::{Utc};
 use crate::history::plot_history;
 
@@ -23,7 +24,7 @@ enum TimeUnitOrBreak {
 
 fn main() {
 
-    let match_result = command!().about("This application is a simple CLI pomodoro timer.").arg(
+    let mut match_result = command!().about("This application is a simple CLI pomodoro timer.").arg(
         Arg::new("timer").short('t').default_value("timer")
     ).arg(
         Arg::new("time_number").short('n').default_value("5").value_parser(clap::value_parser!(usize))
@@ -32,7 +33,7 @@ fn main() {
     )
         .get_matches();
 
-    let user_time_input: TimeUnitOrBreak;
+    let mut user_time_input: TimeUnitOrBreak;
 
     // Must obtain crate path such that build can find the resources.
     let path_to_crate= env!("CARGO_MANIFEST_DIR");
@@ -43,41 +44,76 @@ fn main() {
     // Must convert &Path to &str and unwrap the result of the .to_str() func
     let numerals: Vec<Vec<String>> = numerals::build_ascii_numerals(numerals_file_path.to_str().unwrap());
 
-    let func = match_result.get_one::<String>("timer").expect("expecting string").to_string();
-    let time_number:usize = match_result.get_one::<usize>("time_number").expect("expecting u64").to_string().parse().unwrap();
-    let time_units = match_result.get_one::<String>("time_units").expect("expecting string").to_string();
+    loop {
 
-    user_time_input = get_time_input(time_number, time_units);
+        let func = match_result.get_one::<String>("timer").expect("expecting string").to_string();
+        let time_number: usize = match_result.get_one::<usize>("time_number").expect("expecting u64").to_string().parse().unwrap();
+        let time_units = match_result.get_one::<String>("time_units").expect("expecting string").to_string();
 
-    println!("Welcome to the rsPomodoro! 🍅 \n");
+        user_time_input = get_time_input(time_number, time_units);
 
-    let begin_time  = Utc::now();
+        println!("Welcome to the rsPomodoro! 🍅 \n");
 
-    match user_time_input {
-        TimeUnitOrBreak::TimeItem(time, units) => {
-        match func.as_str() {
-            "timer" => {
-                let calculated_time = create_time(time, units);
-                timer::timer(calculated_time, numerals.clone());
-                let end_time = Utc::now();
-                history::write_session_history(session_file_path.to_str().unwrap(), begin_time, end_time);
-            },
-            "break" => {
-                // default to 5 minutes for a break
-                let calculated_time = create_time(300, TimeUnits::Seconds());
-                timer::timer(calculated_time, numerals.clone());
-            },
-            "history" => {
+        let begin_time = Utc::now();
 
-                // Just take the input time numbers for now and treat them as buckets...
-                plot_history(time)
-            },
-            _ => {
-                println!("Input function does not exist...Ending Program...")
-            },
+        match user_time_input {
+            TimeUnitOrBreak::TimeItem(time, units) => {
+                match func.as_str() {
+                    "timer" => {
+                        let calculated_time = create_time(time, units);
+                        timer::timer(calculated_time, numerals.clone());
+                        let end_time = Utc::now();
+                        history::write_session_history(session_file_path.to_str().unwrap(), begin_time, end_time);
+                    },
+                    "break" => {
+                        // default to 5 minutes for a break
+                        let calculated_time = create_time(300, TimeUnits::Seconds());
+                        timer::timer(calculated_time, numerals.clone());
+                    },
+                    "history" => {
+
+                        // Just take the input time numbers for now and treat them as buckets...
+                        plot_history(time)
+                    },
+                    "q" => {
+
+                        break
+                    },
+                    _ => {
+                        println!("Input function does not exist...Ending Program...")
+                    },
+                }
+            }
         }
 
-        }
+        println!(">  ");
+        io::stdout().flush().unwrap();
+
+        let mut input_str = String::new();
+
+        io::stdin()
+            .read_line(&mut input_str)
+            .expect("Failed to read input");
+
+        println!("");
+
+        let lc_input_str = input_str.to_lowercase(); // makes lower case
+        // match lc_input_str.as_str() {
+        //     "quit\n" => break,
+        //     _ => continue,
+        // }
+        let input: Vec<_> = lc_input_str.split_whitespace()
+            .map(|s| s.to_string()).collect();
+
+        match_result = command!().about("This application is a simple CLI pomodoro timer.").arg(
+            Arg::new("timer").short('t').default_value("timer")
+        ).arg(
+            Arg::new("time_number").short('n').default_value("5").value_parser(clap::value_parser!(usize))
+        ).arg(
+            Arg::new("time_units").short('u').default_value("s")
+        )
+            .get_matches_from(input);
+
 
     }
 
