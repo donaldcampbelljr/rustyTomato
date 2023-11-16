@@ -21,8 +21,18 @@ enum TimeUnitOrBreak {
     TimeItem(usize, TimeUnits),
 }
 
+use crossterm::{
+    event::{self, KeyCode, KeyEventKind},
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
+};
+use ratatui::{
+    prelude::{CrosstermBackend, Stylize, Terminal},
+    widgets::Paragraph,
+};
+use std::io::{stdout, Result};
 
-fn main() {
+fn main() -> Result<()>  {
 
     let mut match_result = command!().about("This application is a simple CLI pomodoro timer.").arg(
         Arg::new("timer").short('t').default_value("timer")
@@ -44,7 +54,22 @@ fn main() {
     // Must convert &Path to &str and unwrap the result of the .to_str() func
     let numerals: Vec<Vec<String>> = numerals::build_ascii_numerals(numerals_file_path.to_str().unwrap());
 
+    stdout().execute(EnterAlternateScreen)?;
+    enable_raw_mode()?;
+    let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
+    terminal.clear()?;
+
     loop {
+
+        terminal.draw(|frame| {
+            let area = frame.size();
+            frame.render_widget(
+                Paragraph::new("Welcome to the rsPomodoro! 🍅 \n")
+                    .red()
+                    .on_white(),
+                area,
+            );
+        })?;
 
         let func = match_result.get_one::<String>("timer").expect("expecting string").to_string();
         let time_number: usize = match_result.get_one::<usize>("time_number").expect("expecting u64").to_string().parse().unwrap();
@@ -52,7 +77,7 @@ fn main() {
 
         user_time_input = get_time_input(time_number, time_units);
 
-        println!("Welcome to the rsPomodoro! 🍅 \n");
+        //println!("Welcome to the rsPomodoro! 🍅 \n");
 
         let begin_time = Utc::now();
 
@@ -76,8 +101,10 @@ fn main() {
                         plot_history(time)
                     },
                     "q" => {
+                        // stdout().execute(LeaveAlternateScreen)?;
+                        // disable_raw_mode()?;
+                        // Ok(())
 
-                        break
                     },
                     _ => {
                         println!("Input function does not exist...Ending Program...")
@@ -86,6 +113,13 @@ fn main() {
             }
         }
 
+        if event::poll(std::time::Duration::from_millis(16))? {
+            if let event::Event::Key(key) = event::read()? {
+                if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('q') {
+                    break;
+                }
+            }
+        }
         println!(">  ");
         io::stdout().flush().unwrap();
 
@@ -116,8 +150,11 @@ fn main() {
 
 
     }
-
     println!("Ending Program");
+    stdout().execute(LeaveAlternateScreen)?;
+    disable_raw_mode()?;
+    Ok(())
+
 }
 
 

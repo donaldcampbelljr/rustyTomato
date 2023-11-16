@@ -8,7 +8,9 @@ edition = "2021"
 [dependencies]
 chrono = { version = "0.4.31", features = [] }
 clap = { version = "4.4.8", features = ["cargo"] }
+crossterm = "0.27.0"
 lowcharts = "*"
+ratatui = "0.24.0"
 
 #[package.metadata]
 #include = ["src/ascii_art/ascii_numbers.txt", "src/history/session_history.txt"]
