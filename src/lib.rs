@@ -1,6 +1,5 @@
 use wasm_bindgen::prelude::*;
 use chrono::{DateTime, Utc};
-use std::collections::HashMap;
 
 // Import the console.log function from the browser
 #[wasm_bindgen]
@@ -44,6 +43,8 @@ impl WasmPomodoroTimer {
             WasmTimeUnits::Months => time_number * 30 * 24 * 60 * 60,
         };
 
+        console_log!("Creating timer with {} seconds", duration_seconds);
+
         WasmPomodoroTimer {
             duration_seconds,
             start_time: None,
@@ -57,26 +58,25 @@ impl WasmPomodoroTimer {
     }
 
     #[wasm_bindgen]
-    pub fn get_remaining_time(&self) -> Option<usize> {
+    pub fn get_remaining_time(&self) -> i32 {
         if let Some(start) = self.start_time {
             let elapsed = Utc::now().signed_duration_since(start).num_seconds() as usize;
+            console_log!("Elapsed: {} seconds", elapsed);
             if elapsed < self.duration_seconds {
-                Some(self.duration_seconds - elapsed)
+                (self.duration_seconds - elapsed) as i32
             } else {
-                Some(0)
+                0
             }
         } else {
-            Some(self.duration_seconds)
+            self.duration_seconds as i32
         }
     }
 
     #[wasm_bindgen]
     pub fn is_finished(&self) -> bool {
-        if let Some(remaining) = self.get_remaining_time() {
-            remaining == 0
-        } else {
-            false
-        }
+        let remaining = self.get_remaining_time();
+        console_log!("Remaining time: {}", remaining);
+        remaining <= 0 && self.start_time.is_some()
     }
 
     #[wasm_bindgen]
