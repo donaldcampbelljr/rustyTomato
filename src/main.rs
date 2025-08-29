@@ -1,12 +1,18 @@
 use std::{path::Path, path::PathBuf};
 use chrono::{Utc};
-use crate::history::plot_history;
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::history::plot_history;
+#[cfg(not(target_arch = "wasm32"))]
 use clap::{Arg, command};
 
 mod history;
 mod timer;
 mod numerals;
+
+// Only compile lib module for WASM target
+#[cfg(target_arch = "wasm32")]
+pub mod lib;
 
 #[derive(Debug)]
 pub enum TimeUnits{
@@ -20,7 +26,7 @@ enum TimeUnitOrBreak {
     TimeItem(usize, TimeUnits),
 }
 
-
+#[cfg(not(target_arch = "wasm32"))]
 fn main() {
 
     let match_result = command!().about("This application is a simple CLI pomodoro timer.").arg(

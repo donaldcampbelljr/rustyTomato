@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>rsPomodoro WASM</title>
+</head>
+<body>
+    <div id="app">
+        <h1>rsPomodoro Timer 🍅</h1>
+        <input type="number" id="timeInput" value="5" min="1">
+        <select id="unitSelect">
+            <option value="Seconds">Seconds</option>
+            <option value="Minutes" selected>Minutes</option>
+        </select>
+        <button id="startBtn">Start Timer</button>
+        <div id="status"></div>
+        <div id="timer">Ready to start!</div>
+    </div>
+
+    <script type="module">
+        import init, { WasmPomodoroTimer, WasmTimeUnits } from './pkg/rsPomodoro.js';
+
+        async function run() {
+            await init();
+
+            const timeInput = document.getElementById('timeInput');
+            const unitSelect = document.getElementById('unitSelect');
+            const startBtn = document.getElementById('startBtn');
+            const status = document.getElementById('status');
+            const timerDisplay = document.getElementById('timer');
+
+            let currentTimer = null;
+            let intervalId = null;
+
+            startBtn.addEventListener('click', () => {
+                const timeValue = parseInt(timeInput.value);
+                const timeUnit = unitSelect.value === 'Minutes' 
+                    ? WasmTimeUnits.Minutes 
+                    : WasmTimeUnits.Seconds;
+
+                currentTimer = new WasmPomodoroTimer(timeValue, timeUnit);
+                currentTimer.start();
+
+                startBtn.disabled = true;
+                status.textContent = 'Timer running...';
+
+                intervalId = setInterval(() => {
+                    const remaining = currentTimer.get_remaining_time();
+                    if (remaining !== null) {
+                        const minutes = Math.floor(remaining / 60);
+                        const seconds = remaining % 60;
+                        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                        if (currentTimer.is_finished()) {
+                            clearInterval(intervalId);
+                            status.textContent = 'Timer finished! 🎉';
+                            startBtn.disabled = false;
+                            timerDisplay.textContent = 'Ready to start!';
+                        }
+                    }
+                }, 1000);
+            });
+        }
+
+        run();
+    </script>
+</body>
+</html>
