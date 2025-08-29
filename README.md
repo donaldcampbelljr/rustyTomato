@@ -1,4 +1,7 @@
-# Now with WASM Bindings
+
+# rsPomodoro Timer 🍅
+
+## Run in browser with WASM Bindings
 
 #### Start http server
 python3 -m http.server 8000
@@ -6,7 +9,7 @@ python3 -m http.server 8000
 Then open http://localhost:8000/rspomo.html in your browser.
 
 
-# CLI Usage
+## Run in terminal with CLI
 
 `cargo build --release`
 
