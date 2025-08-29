@@ -26,6 +26,33 @@
     <script type="module">
         import init, { WasmPomodoroTimer, WasmTimeUnits } from './pkg/rsPomodoro.js';
 
+
+        function createChime() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Create a simple bell-like chime
+            const playChime = () => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Bell-like frequencies
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.5);
+                
+                // Fade out
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1);
+            };
+            
+            return playChime;
+        }
+
         async function run() {
             try {
                 await init();
@@ -36,6 +63,7 @@
                 const startBtn = document.getElementById('startBtn');
                 const status = document.getElementById('status');
                 const timerDisplay = document.getElementById('timer');
+                const playChime = createChime();
 
                 let currentTimer = null;
                 let intervalId = null;
@@ -72,14 +100,17 @@
                                 timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
                                 if (currentTimer.is_finished()) {
+                                    playChime();
                                     console.log("Timer finished!");
                                     clearInterval(intervalId);
                                     status.textContent = 'Timer finished! 🎉';
                                     startBtn.disabled = false;
                                     timerDisplay.textContent = 'Ready to start!';
                                     
-                                    // Optional: Play a sound or show notification
-                                    alert('Pomodoro session complete! 🍅');
+                                    
+                                    setTimeout(() => {
+                                        alert('Pomodoro session complete! 🍅');
+                                    }, 1000);
                                 }
                             } catch (error) {
                                 console.error("Error in timer interval:", error);
